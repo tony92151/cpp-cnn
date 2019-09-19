@@ -6,8 +6,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-find_package(Boost 1.40 COMPONENTS unit_test_framework REQUIRED)
-find_package(Armadillo 6.5 REQUIRED)
+find_package(Boost  COMPONENTS unit_test_framework REQUIRED)
+find_package(Armadillo REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIR})
 include_directories(${ARMADILLO_INCLUDE_DIRS})

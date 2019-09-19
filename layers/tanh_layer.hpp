@@ -29,7 +29,7 @@ class Tanh{
     void Backward(arma::cube upstreamGradient){
         //gradientWrtInput = input;
         //gradientWrtInput.transform( [](double val) { return math.pow(arma::sech(val),2); } );
-        this->gradientWrtInput = pow(upstreamGradient,2);
+        this->gradientWrtInput = (double )1-pow(arma::tanh(upstreamGradient),2);
     }
 
     arma::cube getGradientWrtInput() { return gradientWrtInput; }
