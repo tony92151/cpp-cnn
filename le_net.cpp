@@ -1,6 +1,7 @@
 #include "layers/convolution_layer.hpp"
 #include "layers/max_pooling_layer.hpp"
 #include "layers/relu_layer.hpp"
+#include "layers/tanh_layer.hpp"
 #include "layers/dense_layer.hpp"
 #include "layers/softmax_layer.hpp"
 #include "layers/cross_entropy_loss_layer.hpp"
@@ -62,7 +63,11 @@ int main(int argc, char ** argv)
       6);
   // Output is 24 x 24 x 6
 
-  ReLULayer r1(
+//   ReLULayer r1(
+//       24,
+//       24,
+//       6);
+  Tanh r1(
       24,
       24,
       6);

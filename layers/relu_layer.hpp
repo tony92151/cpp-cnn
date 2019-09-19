@@ -17,16 +17,14 @@ class ReLULayer
     // Nothing to do here.
   }
 
-  void Forward(arma::cube& input, arma::cube& output)
-  {
+  void Forward(arma::cube& input, arma::cube& output){
     output = arma::zeros(arma::size(input));
     output = arma::max(input, output);
     this->input = input;
     this->output = output;
   }
 
-  void Backward(arma::cube upstreamGradient)
-  {
+  void Backward(arma::cube upstreamGradient){
     gradientWrtInput = input;
     gradientWrtInput.transform( [](double val) { return val > 0? 1 : 0; } );
     gradientWrtInput = gradientWrtInput % upstreamGradient;

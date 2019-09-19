@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "armadillo": "cpp",
+        "cassert": "cpp",
+        "iostream": "cpp",
+        "iosfwd": "cpp",
+        "__split_buffer": "cpp",
+        "deque": "cpp",
+        "vector": "cpp",
+        "*.tcc": "cpp"
+    }
+}
