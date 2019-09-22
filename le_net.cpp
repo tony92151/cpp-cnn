@@ -48,7 +48,7 @@ int main(int argc, char ** argv)
   const size_t TEST_DATA_SIZE = testData.size();
   const double LEARNING_RATE = 0.05;
   const size_t EPOCHS = 10;
-  const size_t BATCH_SIZE = 10;
+  const size_t BATCH_SIZE = 100;
   const size_t NUM_BATCHES = TRAIN_DATA_SIZE / BATCH_SIZE;
 
   // Define the network layers
@@ -153,10 +153,15 @@ int main(int argc, char ** argv)
 
       for (size_t i = 0; i < BATCH_SIZE; i++)
       {
+          if(i%10==0){
+              //std::cout << "STEP: "<<i << std::endl;
+          }
         // Forward pass
+        //std::cout<<"c1"<<std::endl;
         c1.Forward(trainData[batch[i]], c1Out);
         r1.Forward(c1Out, r1Out);
         mp1.Forward(r1Out, mp1Out);
+        //std::cout<<"c2"<<std::endl;
         c2.Forward(mp1Out, c2Out);
         r2.Forward(c2Out, r2Out);
         mp2.Forward(r2Out, mp2Out);
@@ -208,9 +213,11 @@ int main(int argc, char ** argv)
     for (size_t i = 0; i < TRAIN_DATA_SIZE; i++)
     {
       // Forward pass
+      //std::cout<<"c1"<<std::endl;
       c1.Forward(trainData[i], c1Out);
       r1.Forward(c1Out, r1Out);
       mp1.Forward(r1Out, mp1Out);
+      //std::cout<<"c1"<<std::endl;
       c2.Forward(mp1Out, c2Out);
       r2.Forward(c2Out, r2Out);
       mp2.Forward(r2Out, mp2Out);

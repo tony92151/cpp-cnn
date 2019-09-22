@@ -11,6 +11,36 @@
 #define DEBUG false
 #define DEBUG_PREFIX "[DEBUG CONV LAYER ]\t"
 
+
+void ConvolutionThread(size_t fidx, 
+                      arma::cube& input,
+                      arma::cube& outputT,
+                      arma::cube& Filters,
+                      size_t inputHeight,
+                      size_t inputWidth,
+                      size_t inputDepth,
+                      size_t filterHeight,
+                      size_t filterWidth,
+                      size_t verticalStride,
+                      size_t horizontalStride){
+    //std::cout<<"con: "<<fidx << std::endl;
+    //std::cout<<"cube_in: "<<arma::size(input)<< std::endl;
+    //std::cout<<"cube_in outputT: "<<arma::size(outputT)<< std::endl;
+
+    for (size_t i=0; i <= inputHeight - filterHeight; i += verticalStride){
+        for (size_t j=0; j <= inputWidth - filterWidth; j += horizontalStride){
+           outputT((i/verticalStride), (j/horizontalStride), fidx) = arma::dot(
+              arma::vectorise(
+                  input.subcube(i, j, 0,
+                                i+filterHeight-1, j+filterWidth-1, inputDepth-1)
+                ),
+              arma::vectorise(Filters));
+        }
+         
+      }
+  }
+
+
 class ConvolutionLayer
 {
  public:
@@ -67,19 +97,19 @@ class ConvolutionLayer
   //std::vector<std::thread> threads;
   //arma::cube outputT;
 
-  void convolutionThread(size_t fidx, arma::cube& outputT){
-    for (size_t i=0; i <= inputHeight - filterHeight; i += verticalStride){
-        for (size_t j=0; j <= inputWidth - filterWidth; j += horizontalStride){
-           outputT((i/verticalStride), (j/horizontalStride), fidx) = arma::dot(
-              arma::vectorise(
-                  input.subcube(i, j, 0,
-                                i+filterHeight-1, j+filterWidth-1, inputDepth-1)
-                ),
-              arma::vectorise(filters[fidx]));
-        }
+  // void convolutionThread(size_t fidx, arma::cube& outputT){
+  //   for (size_t i=0; i <= inputHeight - filterHeight; i += verticalStride){
+  //       for (size_t j=0; j <= inputWidth - filterWidth; j += horizontalStride){
+  //          outputT((i/verticalStride), (j/horizontalStride), fidx) = arma::dot(
+  //             arma::vectorise(
+  //                 input.subcube(i, j, 0,
+  //                               i+filterHeight-1, j+filterWidth-1, inputDepth-1)
+  //               ),
+  //             arma::vectorise(filters[fidx]));
+  //       }
          
-      }
-  }
+  //     }
+  // }
 
   void Forward(arma::cube& input, arma::cube& output)
   {
@@ -92,25 +122,44 @@ class ConvolutionLayer
     arma::cube outputT = arma::zeros((inputHeight - filterHeight)/verticalStride + 1,
                          (inputWidth - filterWidth)/horizontalStride + 1,
                          numFilters);
+                         
     
     //////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////
     std::vector<std::thread> threads;
     for(size_t fidx = 0; fidx < numFilters; fidx++){
-        threads.push_back(std::thread(convolutionThread, fidx, outputT));
-    } 
+      //std::cout<<"open thread: "<<fidx<< std::endl;
+      //std::cout<<"cube: "<<arma::size(input)<< std::endl;
+      //std::cout<<"cube outputT: "<<arma::size(outputT)<< std::endl;
 
+      threads.push_back(std::thread(ConvolutionThread, 
+                                            fidx,
+                                            std::ref(input),
+                                            std::ref(outputT),              
+                                            std::ref(filters[fidx]),
+                                            inputHeight, 
+                                            inputWidth, 
+                                            inputDepth,
+                                            filterHeight, 
+                                            filterWidth, 
+                                            verticalStride,
+                                            horizontalStride));
+      
+      //std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    } 
+    //std::cout << "done"<< std::endl;
     for(int i = 0; i < threads.size(); i++){
-        //cout << threads[i].get_id() << endl;
+        //std::cout << threads[i].get_id() << std::endl;
         threads[i].join();
     }
+    //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     
     //////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////
 
     
 
-    // Perform convolution for each filter.
+    //Perform convolution for each filter.
     // for (size_t fidx = 0; fidx < numFilters; fidx++)
     // {
     //   for (size_t i=0; i <= inputHeight - filterHeight; i += verticalStride){
