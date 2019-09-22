@@ -40,6 +40,38 @@ void ConvolutionThread(size_t fidx,
       }
   }
 
+  void ConvolutionThreadB(size_t sidx, 
+                      arma::cube& input,
+                      arma::cube& output,
+                      arma::cube& upstreamGradient,
+                      arma::cube& gradInput,
+                      arma::cube& Filters,
+                      size_t inputHeight,
+                      size_t inputWidth,
+                      size_t inputDepth,
+                      size_t filterHeight,
+                      size_t filterWidth,
+                      size_t verticalStride,
+                      size_t horizontalStride){
+
+    for (size_t r=0; r<output.n_rows; r ++)
+    {
+      for (size_t c=0; c<output.n_cols; c ++)
+      {
+        arma::cube tmp(arma::size(input), arma::fill::zeros);
+        tmp.subcube(r*verticalStride,
+                    c*horizontalStride,
+                    0,
+                    (r*verticalStride)+filterHeight-1,
+                    (c*horizontalStride)+filterWidth-1,
+                    inputDepth-1)
+            = Filters;
+        gradInput += upstreamGradient.slice(sidx)(r, c) * tmp;
+      }
+    }
+    
+  }
+
 
 class ConvolutionLayer
 {
@@ -237,25 +269,54 @@ class ConvolutionLayer
     // of the input.
     gradInput = arma::zeros(arma::size(input));
 
-    // Compute the gradient wrt input.
-    for (size_t sidx=0; sidx < numFilters; sidx++)
-    {
-      for (size_t r=0; r<output.n_rows; r ++)
-      {
-        for (size_t c=0; c<output.n_cols; c ++)
-        {
-          arma::cube tmp(arma::size(input), arma::fill::zeros);
-          tmp.subcube(r*verticalStride,
-                      c*horizontalStride,
-                      0,
-                      (r*verticalStride)+filterHeight-1,
-                      (c*horizontalStride)+filterWidth-1,
-                      inputDepth-1)
-              = filters[sidx];
-          gradInput += upstreamGradient.slice(sidx)(r, c) * tmp;
-        }
-      }
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+    std::vector<std::thread> threadsB;
+    for (size_t sidx=0; sidx < numFilters; sidx++){
+        threadsB.push_back(std::thread(ConvolutionThreadB, 
+                                            sidx,
+                                            std::ref(input),
+                                            std::ref(output),
+                                            std::ref(upstreamGradient),
+                                            std::ref(gradInput),              
+                                            std::ref(filters[sidx]),
+                                            inputHeight, 
+                                            inputWidth, 
+                                            inputDepth,
+                                            filterHeight, 
+                                            filterWidth, 
+                                            verticalStride,
+                                            horizontalStride));
     }
+
+    for(int i = 0; i < threadsB.size(); i++){
+        //std::cout << threads[i].get_id() << std::endl;
+        threadsB[i].join();
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////
+
+    // Compute the gradient wrt input.
+    // for (size_t sidx=0; sidx < numFilters; sidx++)
+    // {
+    //   for (size_t r=0; r<output.n_rows; r ++)
+    //   {
+    //     for (size_t c=0; c<output.n_cols; c ++)
+    //     {
+    //       arma::cube tmp(arma::size(input), arma::fill::zeros);
+    //       tmp.subcube(r*verticalStride,
+    //                   c*horizontalStride,
+    //                   0,
+    //                   (r*verticalStride)+filterHeight-1,
+    //                   (c*horizontalStride)+filterWidth-1,
+    //                   inputDepth-1)
+    //           = filters[sidx];
+    //       gradInput += upstreamGradient.slice(sidx)(r, c) * tmp;
+    //     }
+    //   }
+    // }
 
 #if DEBUG
     std::cout

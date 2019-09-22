@@ -142,7 +142,7 @@ int main(int argc, char ** argv)
   for (size_t epoch = 0; epoch < EPOCHS; epoch++)
   {
 #if DEBUG
-    std::cout << DEBUG_PREFIX << std::endl;
+    //std::cout << DEBUG_PREFIX << std::endl;
     std::cout << DEBUG_PREFIX << "Epoch # " << epoch << std::endl;
 #endif
     for (size_t batchIdx = 0; batchIdx < NUM_BATCHES; batchIdx++)
@@ -154,7 +154,7 @@ int main(int argc, char ** argv)
       for (size_t i = 0; i < BATCH_SIZE; i++)
       {
           if(i%10==0){
-              //std::cout << "STEP: "<<i << std::endl;
+              std::cout << "STEP: "<<i << std::endl;
           }
         // Forward pass
         //std::cout<<"c1"<<std::endl;
@@ -185,12 +185,14 @@ int main(int argc, char ** argv)
         arma::cube gradWrtMP2In = mp2.getGradientWrtInput();
         r2.Backward(gradWrtMP2In);
         arma::cube gradWrtR2In = r2.getGradientWrtInput();
+        //std::cout<<"c2B"<<std::endl;
         c2.Backward(gradWrtR2In);
         arma::cube gradWrtC2In = c2.getGradientWrtInput();
         mp1.Backward(gradWrtC2In);
         arma::cube gradWrtMP1In = mp1.getGradientWrtInput();
         r1.Backward(gradWrtMP1In);
         arma::cube gradWrtR1In = r1.getGradientWrtInput();
+        //std::cout<<"c1B"<<std::endl;
         c1.Backward(gradWrtR1In);
         arma::cube gradWrtC1In = c1.getGradientWrtInput();
       }
