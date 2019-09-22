@@ -26,7 +26,7 @@ void ConvolutionThread(size_t fidx,
     //std::cout<<"con: "<<fidx << std::endl;
     //std::cout<<"cube_in: "<<arma::size(input)<< std::endl;
     //std::cout<<"cube_in outputT: "<<arma::size(outputT)<< std::endl;
-
+    //std::cout<< "outputT ADD in T: " <<&outputT <<std::endl;
     for (size_t i=0; i <= inputHeight - filterHeight; i += verticalStride){
         for (size_t j=0; j <= inputWidth - filterWidth; j += horizontalStride){
            outputT((i/verticalStride), (j/horizontalStride), fidx) = arma::dot(
@@ -53,7 +53,7 @@ void ConvolutionThread(size_t fidx,
                       size_t filterWidth,
                       size_t verticalStride,
                       size_t horizontalStride){
-
+    //std::cout<< "gradInput ADD in T: " <<&gradInput <<std::endl;
     for (size_t r=0; r<output.n_rows; r ++)
     {
       for (size_t c=0; c<output.n_cols; c ++)
@@ -184,6 +184,7 @@ class ConvolutionLayer
         //std::cout << threads[i].get_id() << std::endl;
         threads[i].join();
     }
+    //std::cout<< "outputT ADD: " <<&outputT <<std::endl;
     //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -289,7 +290,7 @@ class ConvolutionLayer
                                             verticalStride,
                                             horizontalStride));
     }
-
+    //std::cout<< "gradInput ADD : " <<&gradInput <<std::endl;
     for(int i = 0; i < threadsB.size(); i++){
         //std::cout << threads[i].get_id() << std::endl;
         threadsB[i].join();

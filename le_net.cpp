@@ -14,6 +14,8 @@
 #include <boost/test/unit_test.hpp>
 #include <fstream>
 
+#include <time.h>
+
 #define DEBUG true
 #define DEBUG_PREFIX "[DEBUG LE NET ]\t"
 
@@ -47,7 +49,7 @@ int main(int argc, char ** argv)
   const size_t VALIDATION_DATA_SIZE = validationData.size();
   const size_t TEST_DATA_SIZE = testData.size();
   const double LEARNING_RATE = 0.05;
-  const size_t EPOCHS = 10;
+  const size_t EPOCHS = 5;
   const size_t BATCH_SIZE = 100;
   const size_t NUM_BATCHES = TRAIN_DATA_SIZE / BATCH_SIZE;
 
@@ -138,6 +140,8 @@ int main(int argc, char ** argv)
   double loss = 0.0;
   double cumLoss = 0.0;
 
+  time_t start, end;
+  start = time(NULL);
 
   for (size_t epoch = 0; epoch < EPOCHS; epoch++)
   {
@@ -153,8 +157,8 @@ int main(int argc, char ** argv)
 
       for (size_t i = 0; i < BATCH_SIZE; i++)
       {
-          if(i%10==0){
-              std::cout << "STEP: "<<i << std::endl;
+          if((BATCH_SIZE*batchIdx+i)%400==0){
+              std::cout << "STEP: ("<< BATCH_SIZE*batchIdx+i <<"/"<< trainData.size() <<")" << std::endl;
           }
         // Forward pass
         //std::cout<<"c1"<<std::endl;
@@ -297,6 +301,11 @@ int main(int argc, char ** argv)
     }
     fout.close();
   }
+
+
+  end = time(NULL);
+  double diff = difftime(end, start);
+  std::cout<<"Time = "<<diff<< "s" <<std::endl;
 }
 
 #undef DEBUG
