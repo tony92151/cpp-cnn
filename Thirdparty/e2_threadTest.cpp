@@ -1,32 +1,23 @@
-#include <iostream>
-#include <mutex>
 #include <thread>
+#include <iostream>
+#include <string>
 #include <vector>
+#include<pthread.h>
 
-std::mutex g_mutex;
-int g_count = 0;
-
-void Counter() {
-  // lock_guard 在构造函数里加锁，在析构函数里解锁。
-  std::lock_guard<std::mutex> lock(g_mutex);
-
-  int i = ++g_count;
-  std::cout << "count: " << i << std::endl;
+void func(int i, string s)
+{
+    cout << i << ", " << this_thread::get_id() << endl;
 }
 
-int main() {
-  const std::size_t SIZE = 4;
-
-  std::vector<std::thread> v;
-  v.reserve(SIZE);
-
-  for (std::size_t i = 0; i < SIZE; ++i) {
-    v.emplace_back(&Counter);
-  }
-
-  for (std::thread& t : v) {
-    t.join();
-  }
-
-  return 0;
+int main()
+{
+    std::vector<std::thread> threads;
+    for(int i = 0; i < 10; i++){
+        threads.push_back(std::thread(func, i, "test"));
+    }   
+    for(int i = 0; i < threads.size(); i++){
+        cout << threads[i].get_id() << endl;
+        threads[i].join();
+    }   
+    return 0;
 }

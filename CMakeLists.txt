@@ -8,6 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 find_package(Boost  COMPONENTS unit_test_framework REQUIRED)
 find_package(Armadillo REQUIRED)
+find_package(Threads)
 
 include_directories(${Boost_INCLUDE_DIR})
 include_directories(${ARMADILLO_INCLUDE_DIRS})
@@ -21,6 +22,7 @@ add_executable(
 
 target_link_libraries(convolution_layer_test LINK_PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(convolution_layer_test LINK_PUBLIC ${ARMADILLO_LIBRARIES})
+target_link_libraries(convolution_layer_test LINK_PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(
   dense_layer_test
