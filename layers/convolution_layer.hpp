@@ -11,7 +11,6 @@
 #define DEBUG false
 #define DEBUG_PREFIX "[DEBUG CONV LAYER ]\t"
 
-
 class ConvolutionLayer
 {
  public:
@@ -65,20 +64,10 @@ class ConvolutionLayer
 #endif
   }
 
-  std::vector<std::thread> threads;
+  //std::vector<std::thread> threads;
   //arma::cube outputT;
 
-  static void ConvolutionThread(size_t fidx, 
-                                arma::cube& outputT,
-                                arma::cube& input,
-                                std::vector<arma::cube> filters,
-                                size_t inputHeight,
-                                size_t inputWidth,
-                                size_t inputDepth,
-                                size_t filterHeight,
-                                size_t filterWidth,
-                                size_t verticalStride,
-                                size_t horizontalStride){
+  void convolutionThread(size_t fidx, arma::cube& outputT){
     for (size_t i=0; i <= inputHeight - filterHeight; i += verticalStride){
         for (size_t j=0; j <= inputWidth - filterWidth; j += horizontalStride){
            outputT((i/verticalStride), (j/horizontalStride), fidx) = arma::dot(
@@ -106,20 +95,9 @@ class ConvolutionLayer
     
     //////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////
-    
+    std::vector<std::thread> threads;
     for(size_t fidx = 0; fidx < numFilters; fidx++){
-        threads.push_back(std::thread(ConvolutionThread, 
-                                            fidx,
-                                            input, 
-                                            filters,             
-                                            outputT, 
-                                            inputHeight, 
-                                            inputWidth, 
-                                            inputDepth,
-                                            filterHeight, 
-                                            filterWidth, 
-                                            verticalStride,
-                                            horizontalStride));
+        threads.push_back(std::thread(convolutionThread, fidx, outputT));
     } 
 
     for(int i = 0; i < threads.size(); i++){
