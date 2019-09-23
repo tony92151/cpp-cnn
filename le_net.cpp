@@ -22,7 +22,8 @@
 int main(int argc, char ** argv)
 {
   // Read the Kaggle data
-  MNISTData md("../data");
+  //MNISTData md("../data");
+ MNISTData md("/home/ros/Documents/cpp-cnn/data");
 
   std::vector<arma::cube> trainData = md.getTrainData();
   std::vector<arma::vec> trainLabels = md.getTrainLabels();
@@ -62,7 +63,7 @@ int main(int argc, char ** argv)
       5,
       1,
       1,
-      6);
+      6);//6
   // Output is 24 x 24 x 6
 
 //   ReLULayer r1(
@@ -161,8 +162,9 @@ int main(int argc, char ** argv)
               std::cout << "STEP: ("<< BATCH_SIZE*batchIdx+i <<"/"<< trainData.size() <<")" << std::endl;
           }
         // Forward pass
-        //std::cout<<"c1"<<std::endl;
+        //std::cout<<"brfore: "<<c1Out<<std::endl;
         c1.Forward(trainData[batch[i]], c1Out);
+        //std::cout<<"after: "<<c1Out<<std::endl;
         r1.Forward(c1Out, r1Out);
         mp1.Forward(r1Out, mp1Out);
         //std::cout<<"c2"<<std::endl;

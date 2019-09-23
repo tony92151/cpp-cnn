@@ -20,17 +20,21 @@ include_directories(${ARMADILLO_INCLUDE_DIRS})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-add_executable(
-  e1 
-  e1_plot.cpp
-  )
+# add_executable(
+#   e1 
+#   e1_plot.cpp
+#   )
+
+# target_link_libraries(e1 LINK_PUBLIC ${Boost_LIBRARIES})
+# target_link_libraries(e1 LINK_PUBLIC ${ARMADILLO_LIBRARIES})
 
 add_executable(
   e2 
   e2_threadTest.cpp
   )
-target_link_libraries(e1 LINK_PUBLIC ${Boost_LIBRARIES})
-target_link_libraries(e1 LINK_PUBLIC ${ARMADILLO_LIBRARIES})
+
+
+target_link_libraries(e2 ${ARMADILLO_LIBRARIES})
 target_link_libraries(e2 ${CMAKE_THREAD_LIBS_INIT})
 
 #file(COPY ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
