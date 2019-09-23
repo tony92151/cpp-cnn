@@ -38,6 +38,7 @@ void ConvolutionThread(size_t fidx,
         }
          
       }
+     //std::cout<<"In thread : "<<outputT<<std::endl; 
   }
 
   void ConvolutionThreadB(size_t sidx, 
@@ -210,8 +211,11 @@ class ConvolutionLayer
     // }
 
     // Store the input and output. This will be needed by the backward pass.
+    //std::cout<<"out thread : "<<outputT<<std::endl; 
     this->input = input;
-    this->output = outputT;
+    output = outputT;
+    this->output = output;
+    //std::cout<<"out thread  p : "<<this->output<<std::endl;
 
 #if DEBUG
     std::cout
