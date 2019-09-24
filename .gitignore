@@ -1,6 +1,7 @@
 *out
 build
-data
+#data
+*.csv
 data_small
 data_medium
 

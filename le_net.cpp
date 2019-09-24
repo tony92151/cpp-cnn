@@ -23,10 +23,10 @@
 int main(int argc, char ** argv)
 {
 
-    std::string dataPath;
+    std::string dataPath = "/home/ros/Documents/cpp-cnn/data";
     std::string savePath;
-    size_t EP;
-    double lr;
+    size_t EP = 5;
+    double lr = 0.001;
     std::cout<<"==============================="<<std::endl;
 
 
@@ -94,27 +94,40 @@ int main(int argc, char ** argv)
       28,
       28,
       1,
-      5,
-      5,
+      3,
+      3,
       1,
       1,
-      6);//6
-  // Output is 24 x 24 x 6
+      12);//12
+  // Output is 26 x 26 x 12
 
 //   ReLULayer r1(
 //       24,
 //       24,
 //       6);
   Tanh r1(
+      26,
+      26,
+      12);
+  // Output is 26 x 26 x 12
+  ConvolutionLayer c11(
+      26,
+      26,
+      12,
+      3,
+      3,
+      1,
+      1,
+      24);
+    Tanh r11(
       24,
       24,
-      6);
-  // Output is 24 x 24 x 6
+      24);
 
   MaxPoolingLayer mp1(
       24,
       24,
-      6,
+      24,
       2,
       2,
       2,
@@ -124,24 +137,24 @@ int main(int argc, char ** argv)
   ConvolutionLayer c2(
       12,
       12,
-      6,
+      24,
       5,
       5,
       1,
       1,
-      16);
+      24);
   // Output is 8 x 8 x 16
 
   ReLULayer r2(
       8,
       8,
-      16);
+      24);
   // Output is 8 x 8 x 16
 
   MaxPoolingLayer mp2(
       8,
       8,
-      16,
+      24,
       2,
       2,
       2,
@@ -151,11 +164,14 @@ int main(int argc, char ** argv)
   DenseLayer d(
       4,
       4,
-      16,
-      64);
+      24,
+      128);
 
   FC fc1(
-      64,
+      128,
+      32);
+  FC fc2(
+      32,
       10);
   // Output is a vector of size 10
 
@@ -166,14 +182,19 @@ int main(int argc, char ** argv)
 
   // Initialize armadillo structures to store intermediate outputs (Ie. outputs
   // of hidden layers)
-  arma::cube c1Out = arma::zeros(24, 24, 6);
-  arma::cube r1Out = arma::zeros(24, 24, 6);
-  arma::cube mp1Out = arma::zeros(12, 12, 6);
-  arma::cube c2Out = arma::zeros(8, 8, 16);
-  arma::cube r2Out = arma::zeros(8, 8, 16);
-  arma::cube mp2Out = arma::zeros(4, 4, 16);
-  arma::vec dOut = arma::zeros(64);
-  arma::vec fcOut = arma::zeros(10);
+  arma::cube c1Out = arma::zeros(26, 26, 12);
+  arma::cube r1Out = arma::zeros(26, 26, 12);
+
+  arma::cube c11Out = arma::zeros(26, 26, 24);
+  arma::cube r11Out = arma::zeros(24, 24, 24);
+
+  arma::cube mp1Out = arma::zeros(12, 12, 24);
+  arma::cube c2Out = arma::zeros(12, 12, 24);
+  arma::cube r2Out = arma::zeros(8, 8, 24);
+  arma::cube mp2Out = arma::zeros(4, 4, 24);
+  arma::vec dOut = arma::zeros(128);
+  arma::vec fcOut = arma::zeros(32);
+  arma::vec fc2Out = arma::zeros(10);
   arma::vec sOut = arma::zeros(10);
 
   // Initialize loss and cumulative loss. Cumulative loss totals loss over all
@@ -197,7 +218,7 @@ int main(int argc, char ** argv)
       // Generate a random batch.
       arma::vec batch(BATCH_SIZE, arma::fill::randu);
       batch *= (TRAIN_DATA_SIZE - 1);
-      LEARNING_RATE*=0.999;
+      LEARNING_RATE*=0.95;
 
       for (size_t i = 0; i < BATCH_SIZE; i++)
       {
@@ -209,7 +230,11 @@ int main(int argc, char ** argv)
         c1.Forward(trainData[batch[i]], c1Out);
         //std::cout<<"after: "<<c1Out<<std::endl;
         r1.Forward(c1Out, r1Out);
-        mp1.Forward(r1Out, mp1Out);
+
+        c11.Forward(r1Out,c11Out);
+        r11.Forward(c11Out,r11Out);
+
+        mp1.Forward(r11Out, mp1Out);
         //std::cout<<"c2"<<std::endl;
         c2.Forward(mp1Out, c2Out);
         r2.Forward(c2Out, r2Out);
@@ -217,7 +242,8 @@ int main(int argc, char ** argv)
         d.Forward(mp2Out, dOut);
         dOut /= 100;
         fc1.Forward(dOut,fcOut);
-        s.Forward(fcOut, sOut);
+        fc2.Forward(fcOut,fc2Out);
+        s.Forward(fc2Out, sOut);
 
         // Compute the loss
         loss = l.Forward(sOut, trainLabels[batch[i]]);
@@ -230,7 +256,10 @@ int main(int argc, char ** argv)
         s.Backward(gradWrtPredictedDistribution);
         arma::vec gradWrtSIn = s.getGradientWrtInput();
 
-        fc1.Backward(gradWrtSIn);
+        fc2.Backward(gradWrtSIn);
+        arma::vec gradWrtFC2In = fc2.getGradientWrtInput();
+
+        fc1.Backward(gradWrtFC2In);
         arma::vec gradWrtFCIn = fc1.getGradientWrtInput();
 
         d.Backward(gradWrtFCIn);
@@ -244,7 +273,15 @@ int main(int argc, char ** argv)
         arma::cube gradWrtC2In = c2.getGradientWrtInput();
         mp1.Backward(gradWrtC2In);
         arma::cube gradWrtMP1In = mp1.getGradientWrtInput();
-        r1.Backward(gradWrtMP1In);
+
+        r11.Backward(gradWrtMP1In);
+        arma::cube gradWrtR11In = r11.getGradientWrtInput();
+        //std::cout<<"c1B"<<std::endl;
+        c11.Backward(gradWrtR11In);
+        arma::cube gradWrtC11In = c11.getGradientWrtInput();
+
+
+        r1.Backward(gradWrtC11In);
         arma::cube gradWrtR1In = r1.getGradientWrtInput();
         //std::cout<<"c1B"<<std::endl;
         c1.Backward(gradWrtR1In);
@@ -255,7 +292,9 @@ int main(int argc, char ** argv)
 
       d.UpdateWeightsAndBiases(BATCH_SIZE, LEARNING_RATE);
       fc1.UpdateWeightsAndBiases(BATCH_SIZE, LEARNING_RATE);
+      fc2.UpdateWeightsAndBiases(BATCH_SIZE, LEARNING_RATE);
       c1.UpdateFilterWeights(BATCH_SIZE, LEARNING_RATE);
+      c11.UpdateFilterWeights(BATCH_SIZE, LEARNING_RATE);
       c2.UpdateFilterWeights(BATCH_SIZE, LEARNING_RATE);
     }
 
@@ -273,16 +312,21 @@ int main(int argc, char ** argv)
       // Forward pass
       //std::cout<<"c1"<<std::endl;
       c1.Forward(trainData[i], c1Out);
-      r1.Forward(c1Out, r1Out);
-      mp1.Forward(r1Out, mp1Out);
-      //std::cout<<"c1"<<std::endl;
-      c2.Forward(mp1Out, c2Out);
-      r2.Forward(c2Out, r2Out);
-      mp2.Forward(r2Out, mp2Out);
-      d.Forward(mp2Out, dOut);
-      dOut /= 100;
-      fc1.Forward(dOut,fcOut);
-        s.Forward(fcOut, sOut);
+        r1.Forward(c1Out, r1Out);
+
+        c11.Forward(r1Out,c11Out);
+        r11.Forward(c11Out,r11Out);
+
+        mp1.Forward(r11Out, mp1Out);
+        //std::cout<<"c2"<<std::endl;
+        c2.Forward(mp1Out, c2Out);
+        r2.Forward(c2Out, r2Out);
+        mp2.Forward(r2Out, mp2Out);
+        d.Forward(mp2Out, dOut);
+        dOut /= 100;
+        fc1.Forward(dOut,fcOut);
+        fc2.Forward(fcOut,fc2Out);
+        s.Forward(fc2Out, sOut);
 
       if (trainLabels[i].index_max() == sOut.index_max())
         correct += 1.0;
@@ -301,16 +345,21 @@ int main(int argc, char ** argv)
     {
       // Forward pass
       c1.Forward(validationData[i], c1Out);
-      r1.Forward(c1Out, r1Out);
-      mp1.Forward(r1Out, mp1Out);
-      c2.Forward(mp1Out, c2Out);
-      r2.Forward(c2Out, r2Out);
-      mp2.Forward(r2Out, mp2Out);
-      d.Forward(mp2Out, dOut);
-      dOut /= 100;
-      fc1.Forward(dOut,fcOut);
-      s.Forward(fcOut, sOut);
-      //s.Forward(dOut, sOut);
+        r1.Forward(c1Out, r1Out);
+
+        c11.Forward(r1Out,c11Out);
+        r11.Forward(c11Out,r11Out);
+
+        mp1.Forward(r11Out, mp1Out);
+        //std::cout<<"c2"<<std::endl;
+        c2.Forward(mp1Out, c2Out);
+        r2.Forward(c2Out, r2Out);
+        mp2.Forward(r2Out, mp2Out);
+        d.Forward(mp2Out, dOut);
+        dOut /= 100;
+        fc1.Forward(dOut,fcOut);
+        fc2.Forward(fcOut,fc2Out);
+        s.Forward(fc2Out, sOut);
 
       cumLoss += l.Forward(sOut, validationLabels[i]);
 
@@ -334,21 +383,21 @@ int main(int argc, char ** argv)
     cumLoss = 0.0;
     correct = 0.0;
 
-std::cout << DEBUG_PREFIX << "Epoch # (" << epoch+1 <<" / "<<EPOCHS<<")"<< std::endl;
-    fout2 << DEBUG_PREFIX << "Epoch # (" << epoch+1 <<" / "<<EPOCHS<<")"<< std::endl;
+//std::cout << DEBUG_PREFIX << "Epoch # (" << epoch+1 <<" / "<<EPOCHS<<")"<< std::endl;
+    fout2 << DEBUG_PREFIX << "Epoch # (" << std::to_string(epoch+1) <<" / "<<std::to_string(EPOCHS)<<")"<< std::endl;
     fout2 << DEBUG_PREFIX << std::endl;
     fout2 << DEBUG_PREFIX << "Training loss: "
-        << cumLoss / (BATCH_SIZE * NUM_BATCHES) << std::endl;
+        << std::to_string(cumLoss / (BATCH_SIZE * NUM_BATCHES)) << std::endl;
     fout2 << DEBUG_PREFIX
-        << "Training accuracy: " << correct/TRAIN_DATA_SIZE << std::endl;
+        << "Training accuracy: " << std::to_string(correct/TRAIN_DATA_SIZE) << std::endl;
 
     fout2 << DEBUG_PREFIX
-        << "Validation loss: " << cumLoss / (BATCH_SIZE * NUM_BATCHES)
+        << "Validation loss: " << std::to_string(cumLoss / (BATCH_SIZE * NUM_BATCHES))
         << std::endl;
 
 
     fout2 << DEBUG_PREFIX
-        << "Val accuracy: " << correct / VALIDATION_DATA_SIZE << std::endl;
+        << "Val accuracy: " << std::to_string(correct / VALIDATION_DATA_SIZE) << std::endl;
     fout2 << DEBUG_PREFIX << std::endl;
 
     //fout << "ImageId,Label" << std::endl;
