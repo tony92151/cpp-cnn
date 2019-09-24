@@ -1,5 +1,5 @@
-#ifndef DENSE_LAYER_HPP
-#define DENSE_LAYER_HPP
+#ifndef FC_HPP
+#define FC_HPP
 
 #include <armadillo>
 #include <vector>
@@ -11,20 +11,15 @@
 #define DEBUG false
 #define DEBUG_PREFIX "[DEBUG DENSE LAYER ]\t"
 
-class DenseLayer
+class FC
 {
  public:
-  DenseLayer(size_t inputHeight,
-             size_t inputWidth,
-             size_t inputDepth,
-             size_t numOutputs) :
-      inputHeight(inputHeight),
-      inputWidth(inputWidth),
-      inputDepth(inputDepth),
+  FC(size_t numInputs,size_t numOutputs) :
+      numInputs(numInputs),
       numOutputs(numOutputs)
   {
     // Initialize the weights.
-    weights = arma::zeros(numOutputs, inputHeight*inputWidth*inputDepth);
+    weights = arma::zeros(numOutputs, numInputs);
     weights.imbue( [&]() { return _getTruncNormalVal(0.0, 1.0); } );
 
     // Initialize the biases
@@ -34,41 +29,31 @@ class DenseLayer
     _resetAccumulatedGradients();
   }
 
-  void Forward(arma::cube& input, arma::vec& output)
+
+  void Forward(arma::vec& input, arma::vec& output)
   {
-    arma::vec flatInput = arma::vectorise(input);
-    output = (weights * flatInput) + biases;
+    //arma::vec flatInput = input;
+    output = (weights * input) + biases;
 
     this->input = input;
     this->output = output;
   }
 
-  void Forward(arma::vec& input, arma::vec& output)
-  {
-    arma::vec flatInput = input;
-    output = (weights * flatInput) + biases;
-
-    arma::cube cubin;
-    vec2cube(input,cubin);
-
-    this->input = cubin;
-    this->output = output;
-  }
-
   void Backward(arma::vec& upstreamGradient)
   {
-    arma::vec gradInputVec = arma::zeros(inputHeight*inputWidth*inputDepth);
-    for (size_t i=0; i<(inputHeight*inputWidth*inputDepth); i++)
+    arma::vec gradInputVec = arma::zeros(numInputs);
+    for (size_t i=0; i<(numInputs); i++)
       gradInputVec[i] = arma::dot(weights.col(i), upstreamGradient);
-    arma::cube tmp((inputHeight*inputWidth*inputDepth), 1, 1);
-    tmp.slice(0).col(0) = gradInputVec;
-    gradInput = arma::reshape(tmp, inputHeight, inputWidth, inputDepth);
+    arma::vec tmp(numInputs);
+    tmp = gradInputVec;
+    //tmp.slice(0).col(0) = gradInputVec;
+    //gradInput = arma::reshape(tmp, inputHeight, inputWidth, inputDepth);
 
     accumulatedGradInput += gradInput;
 
     gradWeights = arma::zeros(arma::size(weights));
     for (size_t i=0; i<gradWeights.n_rows; i++)
-      gradWeights.row(i) = vectorise(input).t() * upstreamGradient[i];
+      gradWeights.row(i) = input.t() * upstreamGradient[i];
 
     accumulatedGradWeights += gradWeights;
 
@@ -98,11 +83,11 @@ class DenseLayer
   void setBiases(arma::vec biases) { this->biases = biases; }
 
  private:
-  size_t inputHeight;
-  size_t inputWidth;
-  size_t inputDepth;
+//   size_t inputHeight;
+//   size_t inputWidth;
+//   size_t inputDepth;
   arma::cube input;
-
+  size_t numInputs;
   size_t numOutputs;
   arma::vec output;
 

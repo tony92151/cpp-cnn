@@ -4,6 +4,7 @@
 #include "layers/tanh_layer.hpp"
 #include "layers/dense_layer.hpp"
 #include "layers/softmax_layer.hpp"
+#include "layers/fc.hpp"
 #include "layers/cross_entropy_loss_layer.hpp"
 #include "utils/mnist.hpp"
 
@@ -117,6 +118,10 @@ int main(int argc, char ** argv)
       4,
       4,
       16,
+      64);
+
+  FC fc1(
+      64,
       10);
   // Output is a vector of size 10
 
@@ -133,7 +138,8 @@ int main(int argc, char ** argv)
   arma::cube c2Out = arma::zeros(8, 8, 16);
   arma::cube r2Out = arma::zeros(8, 8, 16);
   arma::cube mp2Out = arma::zeros(4, 4, 16);
-  arma::vec dOut = arma::zeros(10);
+  arma::vec dOut = arma::zeros(64);
+  arma::vec fcOut = arma::zeros(64);
   arma::vec sOut = arma::zeros(10);
 
   // Initialize loss and cumulative loss. Cumulative loss totals loss over all
@@ -148,7 +154,7 @@ int main(int argc, char ** argv)
   {
 #if DEBUG
     //std::cout << DEBUG_PREFIX << std::endl;
-    std::cout << DEBUG_PREFIX << "Epoch # " << epoch << std::endl;
+    std::cout << DEBUG_PREFIX << "Epoch # (" << epoch+1 <<" / "<<EPOCHS<<")"<< std::endl;
 #endif
     for (size_t batchIdx = 0; batchIdx < NUM_BATCHES; batchIdx++)
     {
@@ -173,6 +179,7 @@ int main(int argc, char ** argv)
         mp2.Forward(r2Out, mp2Out);
         d.Forward(mp2Out, dOut);
         dOut /= 100;
+        fc1.Forward(dOut,fcOut);
         s.Forward(dOut, sOut);
 
         // Compute the loss
@@ -185,7 +192,11 @@ int main(int argc, char ** argv)
             l.getGradientWrtPredictedDistribution();
         s.Backward(gradWrtPredictedDistribution);
         arma::vec gradWrtSIn = s.getGradientWrtInput();
-        d.Backward(gradWrtSIn);
+
+        fc.Backward(gradWrtSIn);
+        arma::vec gradWrtFCIn = fc.getGradientWrtInput();
+
+        d.Backward(gradWrtFCIn);
         arma::cube gradWrtDIn = d.getGradientWrtInput();
         mp2.Backward(gradWrtDIn);
         arma::cube gradWrtMP2In = mp2.getGradientWrtInput();
