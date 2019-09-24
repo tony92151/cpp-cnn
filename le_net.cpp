@@ -22,9 +22,43 @@
 
 int main(int argc, char ** argv)
 {
+
+    std::string dataPath;
+    std::string savePath;
+    size_t EP;
+    double lr;
+    std::cout<<"==============================="<<std::endl;
+
+
+    for (int i = 1; i < argc; i++) {
+
+        //std::cout<<"argc : "<<i<<": "<<argv[i]<<std::endl;
+
+        if (strcmp(argv[i],"-d")==0) {
+            dataPath = argv[i+1];
+            std::cout<<"Data path : "<<dataPath<<std::endl;
+        } else if (strcmp(argv[i],"-c")==0) {
+            savePath = argv[i + 1];
+            std::cout<<"Save Path : "<<savePath<<std::endl;
+        } else if (strcmp(argv[i],"-e")==0) {
+            EP = atoi(argv[i + 1]);
+            std::cout<<"EPOCHS : "<<EP<<std::endl;
+        } else if (strcmp(argv[i],"-l")==0) {
+            lr = atof(argv[i + 1]);
+            std::cout<<"LEARNING RATE : "<<lr<<std::endl;
+        }else{
+            //std::cout<<"Error in arg."<<std::endl;
+            //return 0;
+        }
+
+    }
+    std::cout<<"==============================="<<std::endl;
+
+//std::cout<<"Save Path : "<<savePath<<std::endl;
   // Read the Kaggle data
  // MNISTData md("../data");
- MNISTData md("/home/ros/Documents/cpp-cnn/data");
+ //MNISTData md("/home/ros/Documents/cpp-cnn/data");
+ MNISTData md(dataPath);
 
   std::vector<arma::cube> trainData = md.getTrainData();
   std::vector<arma::vec> trainLabels = md.getTrainLabels();
@@ -50,8 +84,8 @@ int main(int argc, char ** argv)
   const size_t TRAIN_DATA_SIZE = trainData.size();
   const size_t VALIDATION_DATA_SIZE = validationData.size();
   const size_t TEST_DATA_SIZE = testData.size();
-   double LEARNING_RATE = 0.01;
-  const size_t EPOCHS = 20;
+   double LEARNING_RATE = lr;
+   size_t EPOCHS = EP;
   const size_t BATCH_SIZE = 100;
   const size_t NUM_BATCHES = TRAIN_DATA_SIZE / BATCH_SIZE;
 
@@ -150,6 +184,8 @@ int main(int argc, char ** argv)
   time_t start, end;
   start = time(NULL);
 
+  std::fstream fout2(savePath,std::ios::out);
+
   for (size_t epoch = 0; epoch < EPOCHS; epoch++)
   {
 #if DEBUG
@@ -161,11 +197,11 @@ int main(int argc, char ** argv)
       // Generate a random batch.
       arma::vec batch(BATCH_SIZE, arma::fill::randu);
       batch *= (TRAIN_DATA_SIZE - 1);
-      LEARNING_RATE*=0.99;
+      LEARNING_RATE*=0.999;
 
       for (size_t i = 0; i < BATCH_SIZE; i++)
       {
-          if((BATCH_SIZE*batchIdx+i)%400==0){
+          if((BATCH_SIZE*batchIdx+i)%500==0){
               std::cout << "STEP: ("<< BATCH_SIZE*batchIdx+i <<"/"<< trainData.size() <<")" << std::endl;
           }
         // Forward pass
@@ -298,35 +334,60 @@ int main(int argc, char ** argv)
     cumLoss = 0.0;
     correct = 0.0;
 
-    // Write results on test data to results csv
-    std::fstream fout("results_epoch_" + std::to_string(epoch) + ".csv",
-                      std::ios::out);
-    fout << "ImageId,Label" << std::endl;
-    for (size_t i=0; i<TEST_DATA_SIZE; i++)
-    {
-      // Forward pass
-      c1.Forward(testData[i], c1Out);
-      r1.Forward(c1Out, r1Out);
-      mp1.Forward(r1Out, mp1Out);
-      c2.Forward(mp1Out, c2Out);
-      r2.Forward(c2Out, r2Out);
-      mp2.Forward(r2Out, mp2Out);
-      d.Forward(mp2Out, dOut);
-      dOut /= 100;
-      fc1.Forward(dOut,fcOut);
-      s.Forward(fcOut, sOut);
-      //s.Forward(dOut, sOut);
+std::cout << DEBUG_PREFIX << "Epoch # (" << epoch+1 <<" / "<<EPOCHS<<")"<< std::endl;
+    fout2 << DEBUG_PREFIX << "Epoch # (" << epoch+1 <<" / "<<EPOCHS<<")"<< std::endl;
+    fout2 << DEBUG_PREFIX << std::endl;
+    fout2 << DEBUG_PREFIX << "Training loss: "
+        << cumLoss / (BATCH_SIZE * NUM_BATCHES) << std::endl;
+    fout2 << DEBUG_PREFIX
+        << "Training accuracy: " << correct/TRAIN_DATA_SIZE << std::endl;
 
-      fout << std::to_string(i+1) << ","
-          << std::to_string(sOut.index_max()) << std::endl;
-    }
-    fout.close();
+    fout2 << DEBUG_PREFIX
+        << "Validation loss: " << cumLoss / (BATCH_SIZE * NUM_BATCHES)
+        << std::endl;
+
+
+    fout2 << DEBUG_PREFIX
+        << "Val accuracy: " << correct / VALIDATION_DATA_SIZE << std::endl;
+    fout2 << DEBUG_PREFIX << std::endl;
+
+    //fout << "ImageId,Label" << std::endl;
+    //fout << "ImageId,Label" << std::endl;
+
+    // Write results on test data to results csv
+    // std::fstream fout(savePath+"/results_epoch_" + std::to_string(epoch) + ".csv",
+    //                   std::ios::out);
+    // fout << "ImageId,Label" << std::endl;
+    // for (size_t i=0; i<TEST_DATA_SIZE; i++)
+    // {
+    //   // Forward pass
+    //   c1.Forward(testData[i], c1Out);
+    //   r1.Forward(c1Out, r1Out);
+    //   mp1.Forward(r1Out, mp1Out);
+    //   c2.Forward(mp1Out, c2Out);
+    //   r2.Forward(c2Out, r2Out);
+    //   mp2.Forward(r2Out, mp2Out);
+    //   d.Forward(mp2Out, dOut);
+    //   dOut /= 100;
+    //   fc1.Forward(dOut,fcOut);
+    //   s.Forward(fcOut, sOut);
+    //   //s.Forward(dOut, sOut);
+
+    //   fout << std::to_string(i+1) << ","
+    //       << std::to_string(sOut.index_max()) << std::endl;
+    // }
+    // fout.close();
   }
+
+  
 
 
   end = time(NULL);
   double diff = difftime(end, start);
   std::cout<<"Time = "<<diff<< "s" <<std::endl;
+  fout2<<"Time = "<<diff<< "s" <<std::endl;
+
+  fout2.close();
 }
 
 
