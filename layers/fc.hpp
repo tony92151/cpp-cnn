@@ -6,7 +6,7 @@
 #include <cmath>
 #include <cassert>
 
-#include "cube2vector.hpp"
+//#include "cube2vector.hpp"
 
 #define DEBUG false
 #define DEBUG_PREFIX "[DEBUG DENSE LAYER ]\t"
@@ -23,7 +23,10 @@ class FC
     weights.imbue( [&]() { return _getTruncNormalVal(0.0, 1.0); } );
 
     // Initialize the biases
-    biases = arma::zeros(numOutputs);
+    //biases = arma::vec(numOutputs ,arma::fill::randu);
+    biases = arma::vec(numOutputs);
+    //std::cout<<"biases: "<<biases<<std::endl;
+    //mat A(5, 5, fill::randu);
 
     // Reset accumulated gradients.
     _resetAccumulatedGradients();
@@ -41,15 +44,19 @@ class FC
 
   void Backward(arma::vec& upstreamGradient)
   {
-    arma::vec gradInputVec = arma::zeros(numInputs);
+    gradInputVec = arma::zeros(numInputs);
     for (size_t i=0; i<(numInputs); i++)
       gradInputVec[i] = arma::dot(weights.col(i), upstreamGradient);
     arma::vec tmp(numInputs);
     tmp = gradInputVec;
+    //gradInput = this->tmp;
     //tmp.slice(0).col(0) = gradInputVec;
     //gradInput = arma::reshape(tmp, inputHeight, inputWidth, inputDepth);
 
-    accumulatedGradInput += gradInput;
+    //std::cout<<"ecc: "<<accumulatedGradInput<<std::endl;
+    //std::cout<<"gradInput: "<<gradInput<<std::endl;
+
+    accumulatedGradInput += gradInputVec;
 
     gradWeights = arma::zeros(arma::size(weights));
     for (size_t i=0; i<gradWeights.n_rows; i++)
@@ -70,7 +77,7 @@ class FC
 
   arma::mat getGradientWrtWeights() { return gradWeights; }
 
-  arma::cube getGradientWrtInput() { return gradInput; }
+  arma::vec getGradientWrtInput() { return gradInputVec; }
 
   arma::vec getGradientWrtBiases() { return gradBiases; }
 
@@ -86,7 +93,7 @@ class FC
 //   size_t inputHeight;
 //   size_t inputWidth;
 //   size_t inputDepth;
-  arma::cube input;
+  arma::vec input;
   size_t numInputs;
   size_t numOutputs;
   arma::vec output;
@@ -94,11 +101,11 @@ class FC
   arma::mat weights;
   arma::vec biases;
 
-  arma::cube gradInput;
+  arma::vec gradInputVec;
   arma::mat gradWeights;
   arma::vec gradBiases;
 
-  arma::cube accumulatedGradInput;
+  arma::mat accumulatedGradInput;
   arma::mat accumulatedGradWeights;
   arma::vec accumulatedGradBiases;
 
@@ -113,10 +120,10 @@ class FC
 
   void _resetAccumulatedGradients()
   {
-    accumulatedGradInput = arma::zeros(inputHeight, inputWidth, inputDepth);
+    accumulatedGradInput = arma::zeros(numInputs);
     accumulatedGradWeights = arma::zeros(
         numOutputs,
-        inputHeight*inputWidth*inputDepth
+        numInputs
         );
     accumulatedGradBiases = arma::zeros(numOutputs);
   }

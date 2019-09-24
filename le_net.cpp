@@ -23,8 +23,8 @@
 int main(int argc, char ** argv)
 {
   // Read the Kaggle data
-  MNISTData md("../data");
- //MNISTData md("/home/ros/Documents/cpp-cnn/data");
+ // MNISTData md("../data");
+ MNISTData md("/home/ros/Documents/cpp-cnn/data");
 
   std::vector<arma::cube> trainData = md.getTrainData();
   std::vector<arma::vec> trainLabels = md.getTrainLabels();
@@ -50,8 +50,8 @@ int main(int argc, char ** argv)
   const size_t TRAIN_DATA_SIZE = trainData.size();
   const size_t VALIDATION_DATA_SIZE = validationData.size();
   const size_t TEST_DATA_SIZE = testData.size();
-  const double LEARNING_RATE = 0.05;
-  const size_t EPOCHS = 5;
+   double LEARNING_RATE = 0.01;
+  const size_t EPOCHS = 20;
   const size_t BATCH_SIZE = 100;
   const size_t NUM_BATCHES = TRAIN_DATA_SIZE / BATCH_SIZE;
 
@@ -139,7 +139,7 @@ int main(int argc, char ** argv)
   arma::cube r2Out = arma::zeros(8, 8, 16);
   arma::cube mp2Out = arma::zeros(4, 4, 16);
   arma::vec dOut = arma::zeros(64);
-  arma::vec fcOut = arma::zeros(64);
+  arma::vec fcOut = arma::zeros(10);
   arma::vec sOut = arma::zeros(10);
 
   // Initialize loss and cumulative loss. Cumulative loss totals loss over all
@@ -161,6 +161,7 @@ int main(int argc, char ** argv)
       // Generate a random batch.
       arma::vec batch(BATCH_SIZE, arma::fill::randu);
       batch *= (TRAIN_DATA_SIZE - 1);
+      LEARNING_RATE*=0.99;
 
       for (size_t i = 0; i < BATCH_SIZE; i++)
       {
@@ -180,7 +181,7 @@ int main(int argc, char ** argv)
         d.Forward(mp2Out, dOut);
         dOut /= 100;
         fc1.Forward(dOut,fcOut);
-        s.Forward(dOut, sOut);
+        s.Forward(fcOut, sOut);
 
         // Compute the loss
         loss = l.Forward(sOut, trainLabels[batch[i]]);
@@ -193,8 +194,8 @@ int main(int argc, char ** argv)
         s.Backward(gradWrtPredictedDistribution);
         arma::vec gradWrtSIn = s.getGradientWrtInput();
 
-        fc.Backward(gradWrtSIn);
-        arma::vec gradWrtFCIn = fc.getGradientWrtInput();
+        fc1.Backward(gradWrtSIn);
+        arma::vec gradWrtFCIn = fc1.getGradientWrtInput();
 
         d.Backward(gradWrtFCIn);
         arma::cube gradWrtDIn = d.getGradientWrtInput();
@@ -215,7 +216,9 @@ int main(int argc, char ** argv)
       }
 
       // Update params
+
       d.UpdateWeightsAndBiases(BATCH_SIZE, LEARNING_RATE);
+      fc1.UpdateWeightsAndBiases(BATCH_SIZE, LEARNING_RATE);
       c1.UpdateFilterWeights(BATCH_SIZE, LEARNING_RATE);
       c2.UpdateFilterWeights(BATCH_SIZE, LEARNING_RATE);
     }
@@ -242,7 +245,8 @@ int main(int argc, char ** argv)
       mp2.Forward(r2Out, mp2Out);
       d.Forward(mp2Out, dOut);
       dOut /= 100;
-      s.Forward(dOut, sOut);
+      fc1.Forward(dOut,fcOut);
+        s.Forward(fcOut, sOut);
 
       if (trainLabels[i].index_max() == sOut.index_max())
         correct += 1.0;
@@ -268,7 +272,9 @@ int main(int argc, char ** argv)
       mp2.Forward(r2Out, mp2Out);
       d.Forward(mp2Out, dOut);
       dOut /= 100;
-      s.Forward(dOut, sOut);
+      fc1.Forward(dOut,fcOut);
+      s.Forward(fcOut, sOut);
+      //s.Forward(dOut, sOut);
 
       cumLoss += l.Forward(sOut, validationLabels[i]);
 
@@ -307,7 +313,9 @@ int main(int argc, char ** argv)
       mp2.Forward(r2Out, mp2Out);
       d.Forward(mp2Out, dOut);
       dOut /= 100;
-      s.Forward(dOut, sOut);
+      fc1.Forward(dOut,fcOut);
+      s.Forward(fcOut, sOut);
+      //s.Forward(dOut, sOut);
 
       fout << std::to_string(i+1) << ","
           << std::to_string(sOut.index_max()) << std::endl;
@@ -320,6 +328,7 @@ int main(int argc, char ** argv)
   double diff = difftime(end, start);
   std::cout<<"Time = "<<diff<< "s" <<std::endl;
 }
+
 
 #undef DEBUG
 #undef DEBUG_PREFIX
