@@ -384,20 +384,19 @@ int main(int argc, char ** argv)
     correct = 0.0;
 
 //std::cout << DEBUG_PREFIX << "Epoch # (" << epoch+1 <<" / "<<EPOCHS<<")"<< std::endl;
-    fout2 << DEBUG_PREFIX << "Epoch # (" << std::to_string(epoch+1) <<" / "<<std::to_string(EPOCHS)<<")"<< std::endl;
+    fout2 << DEBUG_PREFIX << "Epoch # ("+std::to_string(epoch+1)+" / "<<std::to_string(EPOCHS)<<")"<< std::endl;
     fout2 << DEBUG_PREFIX << std::endl;
-    fout2 << DEBUG_PREFIX << "Training loss: "
-        << std::to_string(cumLoss / (BATCH_SIZE * NUM_BATCHES)) << std::endl;
+    fout2 << DEBUG_PREFIX << "Training loss: "+std::to_string(cumLoss / (BATCH_SIZE * NUM_BATCHES)) << std::endl;
     fout2 << DEBUG_PREFIX
-        << "Training accuracy: " << std::to_string(correct/TRAIN_DATA_SIZE) << std::endl;
+        << "Training accuracy: "+std::to_string(correct/TRAIN_DATA_SIZE) << std::endl;
 
     fout2 << DEBUG_PREFIX
-        << "Validation loss: " << std::to_string(cumLoss / (BATCH_SIZE * NUM_BATCHES))
+        << "Validation loss: "+std::to_string(cumLoss / (BATCH_SIZE * NUM_BATCHES))
         << std::endl;
 
 
     fout2 << DEBUG_PREFIX
-        << "Val accuracy: " << std::to_string(correct / VALIDATION_DATA_SIZE) << std::endl;
+        << "Val accuracy: "+std::to_string(correct / VALIDATION_DATA_SIZE) << std::endl;
     fout2 << DEBUG_PREFIX << std::endl;
 
     //fout << "ImageId,Label" << std::endl;
