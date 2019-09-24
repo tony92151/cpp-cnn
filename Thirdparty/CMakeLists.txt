@@ -37,6 +37,15 @@ add_executable(
 target_link_libraries(e2 ${ARMADILLO_LIBRARIES})
 target_link_libraries(e2 ${CMAKE_THREAD_LIBS_INIT})
 
+add_executable(
+  e3 
+  e3_cube.cpp
+  )
+target_link_libraries(e3 LINK_PUBLIC ${Boost_LIBRARIES})
+target_link_libraries(e3 LINK_PUBLIC ${ARMADILLO_LIBRARIES})
+target_link_libraries(e3 LINK_PUBLIC ${ARMADILLO_LIBRARIES})
+target_link_libraries(e3 LINK_PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+
 #file(COPY ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 

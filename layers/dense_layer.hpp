@@ -6,6 +6,8 @@
 #include <cmath>
 #include <cassert>
 
+#include "cube2vector.hpp"
+
 #define DEBUG false
 #define DEBUG_PREFIX "[DEBUG DENSE LAYER ]\t"
 
@@ -39,6 +41,15 @@ class DenseLayer
 
     this->input = input;
     this->output = output;
+  }
+
+  void Forward(arma::vec& input, arma::vec& output)
+  {
+    arma::vec flatInput = input;
+    output = (weights * flatInput) + biases;
+
+    //this->input = input;
+    //this->output = output;
   }
 
   void Backward(arma::vec& upstreamGradient)
