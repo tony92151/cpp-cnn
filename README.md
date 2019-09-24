@@ -17,11 +17,18 @@ sudo apt-get install libarmadillo-dev
 
 
 ```
+cd data && tar -zxf data.tar.gz
+cd full && tar -zxf data.tar.gz
+cd ../..
 mkdir build && cd build
 cmake  .. -DBOOST_ROOT=/usr/local/Cellar/boost/1.71.0
 make -j4
 ```
 
+RUN
+```
+./bin/le_net -d $HOME/cpp-cnn/data -c 001.txt -e 10 -l 0.01
+```
 
 
 A C++ implementation of the popular LeNet convolutional neural network architecture. Currently it trains on the Kaggle Digit Recognizer challenge data and gives 0.973 accuracy on the leaderboard. At the time of writing this, I got a rank of 1414 using this model. The results csv file can be found in the `best-results/` directory.
