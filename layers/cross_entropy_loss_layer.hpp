@@ -26,14 +26,14 @@ class CrossEntropyLossLayer
 
     // Compute the loss and cache that too.
     this->loss = -arma::dot(actualDistribution,
-                            arma::log(predictedDistribution+0.00000001));
+                            arma::log(predictedDistribution));
     return this->loss;
   }
 
   void Backward()
   {
     gradientWrtPredictedDistribution =
-        -(actualDistribution % (1/(predictedDistribution+0.00000001)));
+        -(actualDistribution % (1/predictedDistribution));
   }
 
   arma::vec getGradientWrtPredictedDistribution()
