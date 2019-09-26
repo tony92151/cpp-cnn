@@ -4,6 +4,7 @@
 #include "layers/dense_layer.hpp"
 #include "layers/softmax_layer.hpp"
 #include "layers/tanh_layer.hpp"
+#include "layers/fc.hpp"
 #include "layers/cross_entropy_loss_layer.hpp"
 #include "utils/mnist.hpp"
 
@@ -82,8 +83,8 @@ int main(int argc, char ** argv)
   const size_t TRAIN_DATA_SIZE = trainData.size();
   const size_t VALIDATION_DATA_SIZE = validationData.size();
   const size_t TEST_DATA_SIZE = testData.size();
-  const double LEARNING_RATE = 0.05;
-  const size_t EPOCHS = 10;
+  const double LEARNING_RATE = lr;
+  const size_t EPOCHS = EP;
   const size_t BATCH_SIZE = 10;
   const size_t NUM_BATCHES = TRAIN_DATA_SIZE / BATCH_SIZE;
 
@@ -146,7 +147,11 @@ int main(int argc, char ** argv)
       4,
       4,
       16,
-      10);
+      32);
+    FC fc1 (
+        32,
+        10
+    );
   // Output is a vector of size 10
 
   SoftmaxLayer s(10);
@@ -162,7 +167,8 @@ int main(int argc, char ** argv)
   arma::cube c2Out = arma::zeros(8, 8, 16);
   arma::cube r2Out = arma::zeros(8, 8, 16);
   arma::cube mp2Out = arma::zeros(4, 4, 16);
-  arma::vec dOut = arma::zeros(10);
+  arma::vec dOut = arma::zeros(32);
+  arma::vec fc1Out = arma::zeros(10);
   arma::vec sOut = arma::zeros(10);
 
   // Initialize loss and cumulative loss. Cumulative loss totals loss over all
@@ -206,7 +212,8 @@ int main(int argc, char ** argv)
         mp2.Forward(r2Out, mp2Out);
         d.Forward(mp2Out, dOut);
         dOut /= 100;
-        s.Forward(dOut, sOut);
+        fc1.Forward(dOut,fc1Out);
+        s.Forward(fc1Out, sOut);
 
         // Compute the loss
         loss = l.Forward(sOut, trainLabels[batch[i]]);
@@ -218,7 +225,11 @@ int main(int argc, char ** argv)
             l.getGradientWrtPredictedDistribution();
         s.Backward(gradWrtPredictedDistribution);
         arma::vec gradWrtSIn = s.getGradientWrtInput();
-        d.Backward(gradWrtSIn);
+
+        fc1.Backward(gradWrtSIn);
+        arma::vec gradWrtfc1In = fc1.getGradientWrtInput();
+
+        d.Backward(gradWrtfc1In);
         arma::cube gradWrtDIn = d.getGradientWrtInput();
         mp2.Backward(gradWrtDIn);
         arma::cube gradWrtMP2In = mp2.getGradientWrtInput();
@@ -236,6 +247,7 @@ int main(int argc, char ** argv)
 
       // Update params
       d.UpdateWeightsAndBiases(BATCH_SIZE, LEARNING_RATE);
+      fc1.UpdateWeightsAndBiases(BATCH_SIZE,LEARNING_RATE);
       c1.UpdateFilterWeights(BATCH_SIZE, LEARNING_RATE);
       c2.UpdateFilterWeights(BATCH_SIZE, LEARNING_RATE);
     }
@@ -261,7 +273,8 @@ int main(int argc, char ** argv)
       mp2.Forward(r2Out, mp2Out);
       d.Forward(mp2Out, dOut);
       dOut /= 100;
-      s.Forward(dOut, sOut);
+      fc1.Forward(dOut,fc1Out);
+        s.Forward(fc1Out, sOut);
 
       if (trainLabels[i].index_max() == sOut.index_max())
         correct += 1.0;
@@ -288,7 +301,8 @@ int main(int argc, char ** argv)
       mp2.Forward(r2Out, mp2Out);
       d.Forward(mp2Out, dOut);
       dOut /= 100;
-      s.Forward(dOut, sOut);
+      fc1.Forward(dOut,fc1Out);
+        s.Forward(fc1Out, sOut);
 
       cumLoss += l.Forward(sOut, validationLabels[i]);
 

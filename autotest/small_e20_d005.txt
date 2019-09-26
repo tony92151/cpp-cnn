@@ -1,0 +1,140 @@
+==================================================
+Epoch # (1 / 20)
+[DEBUG LE NET ]	
+Training loss: 1.029526
+Training accuracy: 0.886772
+Validation loss: 0.036408
+Val accuracy: 0.878571
+==================================================
+Epoch # (2 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.287664
+Training accuracy: 0.928307
+Validation loss: 0.028448
+Val accuracy: 0.907143
+==================================================
+Epoch # (3 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.193753
+Training accuracy: 0.952116
+Validation loss: 0.017189
+Val accuracy: 0.954762
+==================================================
+Epoch # (4 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.121140
+Training accuracy: 0.968254
+Validation loss: 0.018478
+Val accuracy: 0.950000
+==================================================
+Epoch # (5 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.137047
+Training accuracy: 0.972751
+Validation loss: 0.017715
+Val accuracy: 0.945238
+==================================================
+Epoch # (6 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.095923
+Training accuracy: 0.974868
+Validation loss: 0.019106
+Val accuracy: 0.940476
+==================================================
+Epoch # (7 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.093727
+Training accuracy: 0.982011
+Validation loss: 0.016982
+Val accuracy: 0.959524
+==================================================
+Epoch # (8 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.063194
+Training accuracy: 0.985714
+Validation loss: 0.019026
+Val accuracy: 0.957143
+==================================================
+Epoch # (9 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.069269
+Training accuracy: 0.984127
+Validation loss: 0.015943
+Val accuracy: 0.966667
+==================================================
+Epoch # (10 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.033814
+Training accuracy: 0.992328
+Validation loss: 0.015146
+Val accuracy: 0.966667
+==================================================
+Epoch # (11 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.031869
+Training accuracy: 0.992328
+Validation loss: 0.015474
+Val accuracy: 0.964286
+==================================================
+Epoch # (12 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.029453
+Training accuracy: 0.994709
+Validation loss: 0.017581
+Val accuracy: 0.957143
+==================================================
+Epoch # (13 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.030540
+Training accuracy: 0.996032
+Validation loss: 0.018355
+Val accuracy: 0.961905
+==================================================
+Epoch # (14 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.017853
+Training accuracy: 0.998413
+Validation loss: 0.016902
+Val accuracy: 0.966667
+==================================================
+Epoch # (15 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.014193
+Training accuracy: 0.996561
+Validation loss: 0.015973
+Val accuracy: 0.966667
+==================================================
+Epoch # (16 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.008017
+Training accuracy: 0.999471
+Validation loss: 0.018447
+Val accuracy: 0.966667
+==================================================
+Epoch # (17 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.005699
+Training accuracy: 0.999471
+Validation loss: 0.019776
+Val accuracy: 0.966667
+==================================================
+Epoch # (18 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.004685
+Training accuracy: 0.999471
+Validation loss: 0.018915
+Val accuracy: 0.969048
+==================================================
+Epoch # (19 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.010250
+Training accuracy: 1.000000
+Validation loss: 0.019721
+Val accuracy: 0.961905
+==================================================
+Epoch # (20 / 20)
+[DEBUG LE NET ]	
+Training loss: 0.003309
+Training accuracy: 1.000000
+Validation loss: 0.020072
+Val accuracy: 0.957143
