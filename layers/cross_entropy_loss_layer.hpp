@@ -33,7 +33,7 @@ class CrossEntropyLossLayer
   void Backward()
   {
     gradientWrtPredictedDistribution =
-        -(actualDistribution % (1/predictedDistribution));
+        -(actualDistribution % (1/predictedDistribution+0.00000001));
   }
 
   arma::vec getGradientWrtPredictedDistribution()
